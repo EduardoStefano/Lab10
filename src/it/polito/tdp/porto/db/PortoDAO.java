@@ -4,6 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import it.polito.tdp.porto.model.Author;
 import it.polito.tdp.porto.model.Paper;
@@ -65,4 +68,102 @@ public class PortoDAO {
 			throw new RuntimeException("Errore Db");
 		}
 	}
+	
+	//dato un autore trovo i coautori
+	public List<Author> listaCoautori(int id){
+		
+		List<Author> result = new ArrayList<Author>();
+		final String sql = "SELECT distinct C2.authorid, a.firstname, a.lastname " + 
+				"FROM creator C1, creator C2, author a " + 
+				"WHERE C1.eprintid = C2.eprintid " + 
+				"AND C1.authorid <> C2.authorid " + 
+				"AND a.id = C2.authorid " + 
+				"AND C1.authorid = ?";
+		
+		try {
+			
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1, id);
+
+			ResultSet rs = st.executeQuery();
+
+			while (rs.next()) {
+				Author author = new Author(rs.getInt("authorid"), rs.getString("a.firstname"), rs.getString("a.lastname"));
+				result.add(author);
+			}
+
+			conn.close();
+			return result;
+
+		} catch (SQLException e) {
+			 e.printStackTrace();
+			throw new RuntimeException("Errore Db");
+		}
+		
+	}
+	
+	public List<Author> listAutori(Map<Integer, Author> idMap){
+		
+		List<Author> result = new ArrayList<Author>();
+		final String sql = "SELECT * FROM author a";
+		
+		try {
+			
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+
+			ResultSet rs = st.executeQuery();
+
+			while (rs.next()) {
+				if(idMap.get(rs.getInt("id"))==null) {
+					Author author = new Author(rs.getInt("id"), rs.getString("a.firstname"), rs.getString("a.lastname"));	
+					idMap.put(author.getId(), author);
+					result.add(author);
+				}
+				else {
+					result.add(idMap.get(rs.getInt("id")));
+				}
+				
+			}
+
+			conn.close();
+			return result;
+
+		} catch (SQLException e) {
+			 e.printStackTrace();
+			throw new RuntimeException("Errore Db");
+		}
+	}
+	
+	public Paper trovaArticoliTraDueAutori(int id1, int id2){
+		List<Paper> result = new ArrayList<Paper>();
+		String sql = "SELECT DISTINCT c1.eprintid " + 
+				"FROM creator c1, creator c2 " + 
+				"WHERE c1.eprintid = c2.eprintid " + 
+				"AND c1.authorid = ? " + 
+				"AND c2.authorid = ? " + 
+				"LIMIT 1";
+		
+try {
+			
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1, id1);
+			st.setInt(2, id2);
+			
+			ResultSet rs = st.executeQuery();
+			Paper paper = null;
+			if(rs.next())
+				 paper = this.getArticolo(rs.getInt("c1.eprintid"));
+
+			conn.close();
+			return paper;
+
+		} catch (SQLException e) {
+			 e.printStackTrace();
+			throw new RuntimeException("Errore Db");
+		}
+	}
+	
 }
