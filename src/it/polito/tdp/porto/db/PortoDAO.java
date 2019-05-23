@@ -136,8 +136,7 @@ public class PortoDAO {
 		}
 	}
 	
-	public Paper trovaArticoliTraDueAutori(int id1, int id2){
-		List<Paper> result = new ArrayList<Paper>();
+	public Paper trovaArticoliTraDueAutori(int id1, int id2) { 
 		String sql = "SELECT DISTINCT c1.eprintid " + 
 				"FROM creator c1, creator c2 " + 
 				"WHERE c1.eprintid = c2.eprintid " + 
@@ -145,7 +144,7 @@ public class PortoDAO {
 				"AND c2.authorid = ? " + 
 				"LIMIT 1";
 		
-try {
+			try {
 			
 			Connection conn = DBConnect.getConnection();
 			PreparedStatement st = conn.prepareStatement(sql);
@@ -164,6 +163,31 @@ try {
 			 e.printStackTrace();
 			throw new RuntimeException("Errore Db");
 		}
+	}
+	
+	public List<String> ritornaAutori(){
+		
+		List<String> result = new ArrayList<String>();
+		final String sql = "SELECT * FROM author";
+		
+		
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			ResultSet rs = st.executeQuery(); 
+			
+			while(rs.next()) {
+				result.add(rs.getInt(1)+"-"+rs.getString(2)+" "+rs.getString(3));
+			}
+			
+			conn.close();
+			return result;
+		}
+		catch(SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException("Errore Db");
+		}
+		
 	}
 	
 }

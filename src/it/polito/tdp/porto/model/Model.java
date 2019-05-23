@@ -75,5 +75,9 @@ public class Model {
 		}
 		return paper;
 	}
+	
+	public Map<Integer, Author> ritornaAutori(){
+		return this.idMap;
+	}
 
 }
